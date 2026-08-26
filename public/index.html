@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>SlowReverb Studio</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+body{
+    margin:0;
+    min-height:100vh;
+    padding:18px;
+    background:
+    radial-gradient(circle at top,#252e68,#090c1c 45%,#02030a);
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+.app{
+    max-width:760px;
+    margin:auto;
+}
+
+.logo{
+    text-align:center;
+    font-size:42px;
+    font-weight:800;
+    margin:20px 0 5px;
+    background:linear-gradient(90deg,#fff,#7185ff,#c879ff);
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.subtitle{
+    text-align:center;
+    color:#8f98b5;
+    margin-bottom:25px;
+}
+
+.card{
+    background:rgba(13,17,35,.94);
+    border:1px solid #252d48;
+    border-radius:24px;
+    padding:18px;
+    box-shadow:0 25px 80px rgba(0,0,0,.5);
+}
+
+.import-box{
+    display:block;
+    text-align:center;
+    border:2px dashed #6576ff;
+    border-radius:20px;
+    padding:35px 15px;
+    cursor:pointer;
+}
+
+.music-icon{
+    font-size:48px;
+}
+
+.import-box h2{
+    margin:10px 0 5px;
+}
+
+.import-box p{
+    color:#8992ad;
+    margin:0;
+}
+
+#fileInput{
+    display:none;
+}
+
+#fileName{
+    text-align:center;
+    color:#91a1ff;
+    margin:15px 0;
+    word-break:break-all;
+}
+
+.visualizer{
+    height:130px;
+    background:#060916;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    overflow:hidden;
+    margin:20px 0;
+}
+
+.bar{
+    width:4px;
+    height:20px;
+    border-radius:10px;
+    background:#7182ff;
+    animation:pulse .8s infinite alternate;
+    animation-play-state:paused;
+}
+
+@keyframes pulse{
+    from{height:15px}
+    to{height:85px}
+}
+
+.control{
+    background:#151b30;
+    border-radius:16px;
+    padding:15px;
+    margin-top:14px;
+}
+
+.control-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+.value{
+    color:#91a1ff;
+    font-weight:bold;
+}
+
+input[type=range]{
+    width:100%;
+    accent-color:#7182ff;
+}
+
+.format-box{
+    margin-top:16px;
+    background:#151b30;
+    padding:15px;
+    border-radius:16px;
+}
+
+.format-title{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:10px;
+}
+
+<div class="control">
+    <div class="control-top">
+        <span>✨ Presets</span>
+        <span class="value" id="presetValue">Custom</span>
+    </div>
+
+    <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:8px;
+        margin-top:10px;
+    ">
+
+        <button type="button" id="lofiBtn">
+            🎧 Lo-Fi
+        </button>
+
+        <button type="button" id="dreamyBtn">
+            🌙 Dreamy
+        </button>
+
+        <button type="button" id="vocalBtn">
+            🎤 Vocal
+        </button>
+
+        <button type="button" id="deepBtn">
+            🔥 Deep
+        </button>
+
+    </div>
+
+    <button
+        type="button"
+        id="resetBtn"
+        style="
+            width:100%;
+            margin-top:8px;
+            background:#242b43;
+        "
+    >
+        ↩️ Reset
+    </button>
+</div.format-value{
+    color:#91a1ff;
+    font-weight:bold;
+}
+
+.format-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+}
+
+button{
+    border:0;
+    border-radius:14px;
+    padding:15px;
+    color:white;
+    background:#29314c;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:disabled{
+    opacity:.5;
+}
+
+.selected{
+    background:#596dff;
+}
+
+.buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:16px;
+}
+
+.preview{
+    background:linear-gradient(135deg,#596dff,#9b62ff);
+}
+
+.download{
+    background:linear-gradient(135deg,#08a66d,#18c989);
+}
+
+.progress-box{
+    display:none;
+    margin-top:16px;
+    background:#151b30;
+    padding:15px;
+    border-radius:16px;
+}
+
+.progress-top{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.progress-percent{
+    color:#91a1ff;
+}
+
+.progress-track{
+    width:100%;
+    height:9px;
+    background:#070a15;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#596dff,#a264ff);
+    transition:width .3s;
+}
+
+audio{
+    width:100%;
+    margin-top:18px;
+}
+
+#status{
+    text-align:center;
+    color:#8992ad;
+    margin-top:15px;
+    min-height:22px;
+}
+
+@media(max-width:600px){
+
+    .buttons{
+        grid-template-columns:1fr;
+    }
+
+    .logo{
+        font-size:36px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<div class="logo">
+SlowReverb
+</div>
+
+<div class="subtitle">
+Slow • Reverb • Pitch • MP3 • WAV
+</div>
+
+<div class="card">
+
+<label class="import-box" for="fileInput">
+
+<div class="music-icon">🎵</div>
+
+<h2>Import Your Song</h2>
+
+<p>MP3 or WAV • Tap to select</p>
+
+</label>
+
+<input
+id="fileInput"
+type="file"
+accept=".mp3,.wav,audio/mpeg,audio/wav"
+>
+
+<div id="fileName">
+No song selected
+</div>
+
+
+<div class="visualizer">
+
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+<div class="bar"></div>
+
+</div>
+
+
+<div class="control">
+
+<div class="control-top">
+
+<span>🐌 Slow</span>
+
+<span
+class="value"
+id="speedValue">
+0.70x
+</span>
+
+</div>
+
+<input
+id="speed"
+type="range"
+min="0.50"
+max="1"
+step="0.01"
+value="0.70"
+>
+
+</div>
+
+
+<div class="control">
+
+<div class="control-top">
+
+<span>🎚️ Pitch</span>
+
+<span
+class="value"
+id="pitchValue">
+0 semitones
+</span>
+
+</div>
+
+<input
+id="pitch"
+type="range"
+min="-12"
+max="12"
+step="1"
+value="0"
+>
+
+</div>
+
+
+<div class="control">
+
+<div class="control-top">
+
+<span>🌌 Reverb</span>
+
+<span
+class="value"
+id="reverbValue">
+70%
+</span>
+
+</div>
+
+<input
+id="reverb"
+type="range"
+min="0"
+max="100"
+value="70"
+>
+
+</div>
+
+
+<div class="format-box">
+
+<div class="format-title">
+
+<span>📦 Output Format</span>
+
+<span
+id="formatValue"
+class="format-value">
+MP3
+</span>
+
+</div>
+
+<div class="format-buttons">
+
+<button
+id="mp3Btn"
+class="selected"
+type="button">
+🎵 MP3
+</button>
+
+<button
+id="wavBtn"
+type="button">
+🎧 WAV
+</button>
+
+</div>
+
+</div>
+
+
+<div class="buttons">
+
+<button
+id="playBtn"
+class="preview"
+type="button">
+▶ Preview
+</button>
+
+<button
+id="downloadBtn"
+class="download"
+type="button">
+⬇ Download
+</button>
+
+</div>
+
+
+<div
+id="progressBox"
+class="progress-box">
+
+<div class="progress-top">
+
+<span id="processingText">
+Processing...
+</span>
+
+<span
+id="progressPercent"
+class="progress-percent">
+0%
+</span>
+
+</div>
+
+<div class="progress-track">
+
+<div
+id="progressBar"
+class="progress-bar">
+</div>
+
+</div>
+
+</div>
+
+
+<audio
+id="audio"
+controls>
+</audio>
+
+
+<div id="status">
+Import a song to begin
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+const fileInput =
+document.getElementById("fileInput");
+
+const fileName =
+document.getElementById("fileName");
+
+const audio =
+document.getElementById("audio");
+
+const status =
+document.getElementById("status");
+
+const speed =
+document.getElementById("speed");
+
+const pitch =
+document.getElementById("pitch");
+
+const reverb =
+document.getElementById("reverb");
+
+const speedValue =
+document.getElementById("speedValue");
+
+const pitchValue =
+document.getElementById("pitchValue");
+
+const reverbValue =
+document.getElementById("reverbValue");
+
+const playBtn =
+document.getElementById("playBtn");
+
+const downloadBtn =
+document.getElementById("downloadBtn");
+
+const mp3Btn =
+document.getElementById("mp3Btn");
+
+const wavBtn =
+document.getElementById("wavBtn");
+
+const formatValue =
+document.getElementById("formatValue");
+
+const progressBox =
+document.getElementById("progressBox");
+
+const progressBar =
+document.getElementById("progressBar");
+
+const progressPercent =
+document.getElementById("progressPercent");
+
+const processingText =
+document.getElementById("processingText");
+
+const bars =
+document.querySelectorAll(".bar");
+
+
+let currentFile = null;
+
+let currentURL = null;
+
+let outputFormat = "mp3";
+
+let audioContext = null;
+
+let sourceNode = null;
+
+let dryGain = null;
+
+let wetGain = null;
+
+let convolver = null;
+
+
+/* =========================
+IMPORT
+========================= */
+
+fileInput.addEventListener(
+"change",
+function(){
+
+const file = this.files[0];
+
+if(!file){
+
+status.textContent =
+"❌ No file selected";
+
+return;
+
+}
+
+const name =
+file.name.toLowerCase();
+
+if(
+!name.endsWith(".mp3") &&
+!name.endsWith(".wav")
+){
+
+status.textContent =
+"❌ Only MP3 or WAV allowed";
+
+this.value = "";
+
+return;
+
+}
+
+currentFile = file;
+
+if(currentURL){
+
+URL.revokeObjectURL(
+currentURL
+);
+
+}
+
+currentURL =
+URL.createObjectURL(file);
+
+audio.src =
+currentURL;
+
+audio.load();
+
+fileName.textContent =
+"🎵 " + file.name;
+
+status.textContent =
+"✅ Song imported successfully!";
+
+}
+);
+
+
+/* =========================
+SPEED
+========================= */
+
+speed.addEventListener(
+"input",
+function(){
+
+const value =
+Number(this.value);
+
+speedValue.textContent =
+value.toFixed(2) + "x";
+
+audio.playbackRate =
+value;
+
+}
+);
+
+
+/* =========================
+PITCH
+========================= */
+
+pitch.addEventListener(
+"input",
+function(){
+
+pitchValue.textContent =
+this.value + " semitones";
+
+}
+);
+
+
+/* =========================
+REVERB
+========================= */
+
+reverb.addEventListener(
+"input",
+function(){
+
+const value =
+Number(this.value);
+
+reverbValue.textContent =
+value + "%";
+
+if(wetGain && dryGain){
+
+const amount =
+value / 100;
+
+wetGain.gain.value =
+amount * 0.8;
+
+dryGain.gain.value =
+1 - amount * 0.35;
+
+}
+
+}
+);
+
+
+/* =========================
+REALTIME REVERB
+========================= */
+
+function createImpulse(ctx){
+
+const seconds = 3;
+
+const length =
+ctx.sampleRate * seconds;
+
+const impulse =
+ctx.createBuffer(
+2,
+length,
+ctx.sampleRate
+);
+
+for(
+let channel = 0;
+channel < 2;
+channel++
+){
+
+const data =
+impulse.getChannelData(
+channel
+);
+
+for(
+let i = 0;
+i < length;
+i++
+){
+
+const decay =
+Math.pow(
+1 - i / length,
+3
+);
+
+data[i] =
+(Math.random() * 2 - 1)
+* decay;
+
+}
+
+}
+
+return impulse;
+
+}
+
+
+async function setupReverb(){
+
+if(audioContext)
+return;
+
+audioContext =
+new (
+window.AudioContext ||
+window.webkitAudioContext
+)();
+
+sourceNode =
+audioContext.createMediaElementSource(
+audio
+);
+
+dryGain =
+audioContext.createGain();
+
+wetGain =
+audioContext.createGain();
+
+convolver =
+audioContext.createConvolver();
+
+convolver.buffer =
+createImpulse(audioContext);
+
+sourceNode.connect(
+dryGain
+);
+
+sourceNode.connect(
+convolver
+);
+
+convolver.connect(
+wetGain
+);
+
+dryGain.connect(
+audioContext.destination
+);
+
+wetGain.connect(
+audioContext.destination
+);
+
+const amount =
+Number(reverb.value) / 100;
+
+wetGain.gain.value =
+amount * 0.8;
+
+dryGain.gain.value =
+1 - amount * 0.35;
+
+}
+
+
+/* =========================
+PREVIEW
+========================= */
+
+playBtn.addEventListener(
+"click",
+async function(){
+
+if(!currentFile){
+
+status.textContent =
+"⚠️ Pehle song import karo";
+
+return;
+
+}
+
+await setupReverb();
+
+if(
+audioContext.state ===
+"suspended"
+){
+
+await audioContext.resume();
+
+}
+
+if(audio.paused){
+
+audio.play();
+
+playBtn.textContent =
+"⏸ Pause";
+
+bars.forEach(
+bar =>
+bar.style.animationPlayState =
+"running"
+);
+
+status.textContent =
+"🎧 Playing preview...";
+
+}else{
+
+audio.pause();
+
+playBtn.textContent =
+"▶ Preview";
+
+bars.forEach(
+bar =>
+bar.style.animationPlayState =
+"paused"
+);
+
+status.textContent =
+"⏸ Paused";
+
+}
+
+}
+);
+
+
+/* =========================
+AUDIO END
+========================= */
+
+audio.addEventListener(
+"ended",
+function(){
+
+playBtn.textContent =
+"▶ Preview";
+
+bars.forEach(
+bar =>
+bar.style.animationPlayState =
+"paused"
+);
+
+status.textContent =
+"✓ Preview finished";
+
+}
+);
+
+
+/* =========================
+FORMAT
+========================= */
+
+mp3Btn.addEventListener(
+"click",
+function(){
+
+outputFormat = "mp3";
+
+formatValue.textContent =
+"MP3";
+
+mp3Btn.classList.add(
+"selected"
+);
+
+wavBtn.classList.remove(
+"selected"
+);
+
+}
+);
+
+
+wavBtn.addEventListener(
+"click",
+function(){
+
+outputFormat = "wav";
+
+formatValue.textContent =
+"WAV";
+
+wavBtn.classList.add(
+"selected"
+);
+
+mp3Btn.classList.remove(
+"selected"
+);
+
+}
+);
+
+
+/* =========================
+DOWNLOAD
+========================= */
+
+downloadBtn.addEventListener(
+"click",
+async function(){
+
+if(!currentFile){
+
+status.textContent =
+"⚠️ Pehle song import karo";
+
+return;
+
+}
+
+
+downloadBtn.disabled =
+true;
+
+playBtn.disabled =
+true;
+
+progressBox.style.display =
+"block";
+
+progressBar.style.width =
+"5%";
+
+progressPercent.textContent =
+"5%";
+
+processingText.textContent =
+"🎵 Preparing...";
+
+status.textContent =
+"Processing your song...";
+
+
+let progress = 5;
+
+const progressTimer =
+setInterval(
+function(){
+
+if(progress < 90){
+
+progress += 5;
+
+progressBar.style.width =
+progress + "%";
+
+progressPercent.textContent =
+progress + "%";
+
+if(progress < 40){
+
+processingText.textContent =
+"🎵 Reading audio...";
+
+}else if(progress < 70){
+
+processingText.textContent =
+"🎚️ Applying effects...";
+
+}else{
+
+processingText.textContent =
+"✨ Creating output...";
+
+}
+
+}
+
+},
+400
+);
+
+
+try{
+
+const formData =
+new FormData();
+
+formData.append(
+"song",
+currentFile
+);
+
+formData.append(
+"speed",
+speed.value
+);
+
+formData.append(
+"pitch",
+pitch.value
+);
+
+formData.append(
+"reverb",
+reverb.value
+);
+
+formData.append(
+"format",
+outputFormat
+);
+
+
+const response =
+await fetch(
+"/process",
+{
+method:"POST",
+body:formData
+}
+);
+
+
+const data =
+await response.json();
+
+
+if(!response.ok){
+
+throw new Error(
+data.error ||
+"Processing failed"
+);
+
+}
+
+
+clearInterval(
+progressTimer
+);
+
+progressBar.style.width =
+"100%";
+
+progressPercent.textContent =
+"100%";
+
+processingText.textContent =
+"✅ Complete!";
+
+status.textContent =
+"✅ Download ready!";
+
+
+const link =
+document.createElement("a");
+
+link.href =
+data.file;
+
+link.download =
+"SlowReverb." +
+outputFormat;
+
+document.body.appendChild(
+link
+);
+
+link.click();
+
+link.remove();
+
+
+}catch(error){
+
+clearInterval(
+progressTimer
+);
+
+progressBar.style.width =
+"0%";
+
+progressPercent.textContent =
+"0%";
+
+processingText.textContent =
+"❌ Error";
+
+status.textContent =
+"❌ " + error.message;
+
+}finally{
+
+downloadBtn.disabled =
+false;
+
+playBtn.disabled =
+false;
+
+}
+
+}
+);
+
+</script>
+
+</body>
+</html>
